@@ -1,0 +1,195 @@
+.page {
+    width: 1440px;
+    height: 1024px;
+    margin: 0 auto;
+    display: flex;
+    background: #f2f3ff; /* Tokens/Surface/Secondary */
+    overflow: hidden;
+  }
+  
+  /* Colonne gauche: 
+     width 632, height 1024
+     padding top/bottom 55, left 100
+     gap 151
+  */
+  .leftCol {
+    width: 632px;
+    height: 1024px;
+    padding: 55px 0 55px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 151px;
+    background: #f2f3ff;
+  }
+  
+  /* Logo (156.97 x 23.41, gap 5) */
+  .logo {
+    width: 156.97px;
+    height: 23.41px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .logoIcon {
+    width: 24px;
+    height: 16px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #ff5a5f, #ffb100, #0b23f4);
+  }
+  
+  .logoText {
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #0b23f4;
+  }
+  
+  /* Card login: 398 x 617, radius 20, padding 40/40/80/40, gap 40
+     blur (background blur 114) => via backdrop-filter
+  */
+  .card {
+    width: 398px;
+    height: 617px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(114px);
+    padding: 40px 40px 80px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    box-shadow: 0px 4px 84px -40px rgba(157, 167, 251, 0.4);
+  }
+  
+  .cardHeader {
+    width: 317px; /* titre width 317 */
+  }
+  
+  .title {
+    margin: 0;
+    font-size: 28px;     /* Heading 3 */
+    font-weight: 600;    /* SemiBold */
+    line-height: 100%;
+    color: #0b23f4;      /* Tokens/Surface/Bleu */
+  }
+  
+  /* Formulaire (317 x 241, gap 24) */
+  .form {
+    width: 317px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .formBlock {
+    width: 317px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .formTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111111;
+  }
+  
+  .label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12px;
+    color: #707070;
+  }
+  
+  .input {
+    width: 317px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #d9d9d9;
+    padding: 0 14px;
+    background: #ffffff;
+    outline: none;
+    font-size: 14px;
+  }
+  
+  .input:focus {
+    border-color: #0b23f4;
+  }
+  
+  /* Bouton: Fixed 318 x 51, radius 10, padding 16/40, gap 10, bg #0B23F4 */
+  .btnPrimary {
+    width: 318px;
+    height: 51px;
+    border-radius: 10px;
+    padding: 16px 40px;
+    border: 0;
+    background: #0b23f4;
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .btnPrimary:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+  
+  .forgot {
+    font-size: 12px;
+    color: #111111;
+    text-decoration: none;
+  }
+  
+  .forgot:hover {
+    text-decoration: underline;
+  }
+  
+  .error {
+    margin: 0;
+    font-size: 12px;
+    color: crimson;
+  }
+  
+  /* Colonne droite: image 808 x 1024, left 632 */
+  .rightCol {
+    width: 808px;
+    height: 1024px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .bgImage {
+    width: 808px;
+    height: 1024px;
+    background-image: url("/login-bg.png"); /* mets ton image dans public/login-bg.png */
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .bubble {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    max-width: 260px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 18px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #0b23f4;
+    box-shadow: 0px 4px 84px -40px rgba(157, 167, 251, 0.4);
+  }
+
+  .btnPrimary {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+  
+  .btnPrimary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0px 10px 22px rgba(11, 35, 244, 0.22);
+    background: #091fe0;
+  }
+  
+  .btnPrimary:active {
+    transform: translateY(0px);
+    box-shadow: none;
+  }

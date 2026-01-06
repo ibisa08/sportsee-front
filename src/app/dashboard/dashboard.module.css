@@ -1,0 +1,515 @@
+:root {
+    --bg: #f2f3ff;
+    --card: #ffffff;
+  
+    /* Figma : bouton action = #0B23F4 */
+    --primary: #0b23f4;
+  
+    /* Figma voit aussi un bleu plus clair #7987FF */
+    --primarySoft: #7987ff;
+  
+    --text: #111111;
+    --muted: #707070;
+  
+    /* Shadow cards (vu sur tes captures) */
+    --cardShadow: 0px 4px 84px -40px rgba(157, 167, 251, 0.4);
+  }
+  
+  .page {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  
+  /* Frame 1440 */
+  .frame {
+    width: 1440px;
+    margin: 0 auto;
+    padding-top: 35px; /* Figma frame padding top 35 */
+  }
+  
+  /* content padding left/right 150 (Figma) */
+  .content {
+    padding: 0 150px;
+  }
+  
+  /* HEADER */
+  .header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 22px;
+  }
+  
+  .logoWrap {
+    position: absolute;
+    left: 150px;
+    top: 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .logoMark {
+    width: 26px;
+    height: 18px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #ff5a5f, #ffb100, var(--primary));
+  }
+  
+  .logoText {
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--primary);
+  }
+  
+  /* MENU capsule (561x49, radius 40, padding 16/48, gap 10, white 90%) */
+  .navPill {
+    width: 561px;
+    height: 49px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 48px;
+    border-radius: 40px;
+    background: rgba(255, 255, 255, 0.9);
+  }
+  
+  .navItem {
+    font-size: 13px;
+    color: var(--text);
+    text-decoration: none;
+  }
+  
+  .navDivider {
+    width: 1px;
+    height: 18px;
+    background: #d8defa;
+    margin: 0 6px;
+  }
+  
+  .navLogout {
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 13px;
+  }
+  
+  /* TOP BLOCK (Frame 2637 gap 40) */
+  .topBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+  }
+  
+  /* CTA frame 2610 : 1060x99, radius 10, padding 24/52 */
+  .cta {
+    width: 1060px;
+    height: 99px;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 24px 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .ctaLeft {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* Frame 2613 gap 16 */
+    font-size: 13px;
+    color: #2f3a88;
+  }
+  
+  .ctaIcon {
+    color: var(--primary);
+  }
+  
+  .ctaBtn {
+    width: 269px;
+    height: 51px;
+    border-radius: 10px;
+    padding: 16px 40px;
+    border: 0;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  /* PROFILE HEADER : 1052x181, radius 20, padding 32/52 */
+  .profileHeader {
+    width: 1052px;
+    height: 181px;
+    border-radius: 20px;
+    padding: 32px 52px;
+    background: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+    box-shadow: var(--cardShadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* left group frame 2590 : 345x117 gap 38 */
+  .profileLeft {
+    display: flex;
+    align-items: center;
+    gap: 38px;
+  }
+  
+  /* photo profil 104x117 radius 10 + shadow cards */
+  .avatarWrap {
+    width: 104px;
+    height: 117px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--cardShadow);
+  }
+  
+  .avatarImg {
+    object-fit: cover;
+  }
+  
+  .profileText {
+    width: 203px; /* frame 2589 */
+    height: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .profileName {
+    font-size: 22px;
+    font-weight: 500; /* Inter medium */
+    line-height: 100%;
+    color: var(--text);
+  }
+  
+  .profileMeta {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  
+  /* right group frame 2591 : gap 18 */
+  .profileRight {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  
+  .profileRightLabel {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  
+  /* KPI bleu : 372x90 radius 10 padding 0 52 */
+  .kpiBlue {
+    width: 372px;
+    height: 90px;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 52px;
+  }
+  
+  .kpiIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.22);
+  }
+  
+  .kpiValue {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  
+  .kpiUnit {
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+  
+  /* SECTIONS */
+  .sectionTitle {
+    margin: 40px 0 10px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  
+  .sectionSub {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  
+  /* GRAPH ROW (2 cards 450x342) */
+  .graphRow {
+    width: 1060px;
+    display: flex;
+    justify-content: space-between;
+    gap: 0;
+    margin: 0 auto;
+  }
+  
+  .graphCard {
+    width: 450px;
+    height: 342px;
+    border-radius: 10px;
+    background: var(--card);
+    box-shadow: var(--cardShadow);
+    padding: 16px 38px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+  
+  .graphHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .graphTitleBlue {
+    color: var(--primary);
+    font-weight: 700;
+  }
+  
+  .graphTitleRed {
+    color: #e24b4b;
+    font-weight: 700;
+  }
+  
+  .graphPill {
+    font-size: 11px;
+    color: var(--muted);
+    background: #f3f4ff;
+    border-radius: 999px;
+    padding: 6px 10px;
+  }
+  
+  .graphSub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: -8px;
+  }
+  
+  .graphLegend {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  
+  /* Legend row under BPM chart */
+  .legendRow {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  
+  .legendItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #cbd5e1;
+  }
+  
+  /* WEEK ROW : left 450x342, right 572x342 gap 16 */
+  .weekRow {
+    width: 1060px;
+    display: flex;
+    justify-content: space-between;
+    margin: 0 auto;
+  }
+  
+  .weekRight {
+    width: 572px;
+    height: 342px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* Mini cards (padding not visible in capture → on met une base proche) */
+  .smallCard {
+    background: var(--card);
+    box-shadow: var(--cardShadow);
+    border-radius: 10px;
+    padding: 24px 38px;
+    height: calc((342px - 16px) / 2);
+  }
+  
+  .smallLabel {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  
+  .smallValueBlue {
+    margin-top: 8px;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--primary);
+  }
+  
+  .smallValueRed {
+    margin-top: 8px;
+    font-weight: 800;
+    font-size: 18px;
+    color: #e24b4b;
+  }
+  
+  .smallUnit {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  
+  /* Donut header (text) */
+  .weekInfo {
+    margin-bottom: -4px;
+  }
+  
+  .weekKpi {
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--primary);
+  }
+  
+  .weekMuted {
+    color: var(--muted);
+    font-weight: 500;
+  }
+  
+  .weekSub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  
+  /* FOOTER : 1440x40.66 padding 10/100 space-between */
+  .footer {
+    width: 1440px;
+    height: 40.66px;
+    padding: 10px 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    background: transparent;
+  }
+  
+  .footerLeft {
+    display: flex;
+    gap: 9px; /* frame 2588 gap 9 */
+    font-size: 12px;
+    color: var(--muted);
+  }
+  
+  .footerRight {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* frame 2587 gap 16 */
+    font-size: 12px;
+  }
+  
+  .footerRight a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  
+  .footerMark {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #ff5a5f, #ffb100, var(--primary));
+  }
+  
+  /* footer icon */
+.footerIcon {
+  width: 19px;      /* valeur Figma pour l’icon */
+  height: 20.66px;
+  object-fit: contain;
+  display: block;
+}
+  /* utils */
+  .h1 {
+    font-size: 28px;
+    margin: 0 0 10px;
+  }
+  
+  .error {
+    color: crimson;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  
+  .btnGhost {
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    border-radius: 10px;
+    padding: 8px 10px;
+    cursor: pointer;
+  }
+
+  /* Transitions */
+.navItem,
+.navLogout,
+.ctaBtn {
+  transition: color 0.15s ease, background-color 0.15s ease, transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Hover navigation */
+.navItem:hover {
+  color: var(--primary);
+}
+
+.navLogout:hover {
+  text-decoration: underline;
+}
+
+/* Hover bouton bleu (CTA) */
+.ctaBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0px 10px 22px rgba(11, 35, 244, 0.22);
+  background: #091fe0; /* un poil plus foncé que #0B23F4 */
+}
+
+.ctaBtn:active {
+  transform: translateY(0px);
+  box-shadow: none;
+}
+
+/* Hover photo profil */
+.avatarWrap {
+  cursor: pointer;
+}
+
+.avatarImg {
+  transition: transform 0.18s ease;
+}
+
+.avatarWrap:hover .avatarImg {
+  transform: scale(1.03);
+}
