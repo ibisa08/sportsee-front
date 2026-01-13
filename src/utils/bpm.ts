@@ -1,104 +1,107 @@
-export type ActivitySession = {
-    date: string; // "YYYY-MM-DD" ou ISO
-    heartRate?: { min: number; max: number; average: number };
-  
-    // format API (clé avec espace)
-    ["frequence cardiaque"]?: { min: number; max: number; moyenne: number };
-  
-    // variante possible
-    frequenceCardiaque?: { min: number; max: number; moyenne: number };
+// src/utils/bpm.ts
+export type Session = {
+  date: string;
+  heartRate?: { min?: number; max?: number; average?: number };
+};
+
+export type BpmPoint = {
+  day: "Lun" | "Mar" | "Mer" | "Jeu" | "Ven" | "Sam" | "Dim";
+  min: number;
+  max: number;
+  avg: number;
+};
+
+const DAYS: BpmPoint["day"][] = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+
+function clampNumber(v: unknown, fallback = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function dayLabelFromISO(dateISO: string): BpmPoint["day"] {
+  const d = new Date(dateISO);
+  // JS: 0=Sun .. 6=Sat  -> want Mon..Sun
+  const map: Record<number, BpmPoint["day"]> = {
+    0: "Dim",
+    1: "Lun",
+    2: "Mar",
+    3: "Mer",
+    4: "Jeu",
+    5: "Ven",
+    6: "Sam",
   };
-  
-  export type BpmPoint = {
-    day: string; // Lun..Dim
-    minBpm: number | null;
-    maxBpm: number | null;
-    avgBpm: number | null;
-  };
-  
-  const ORDER = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"] as const;
-  const DAYS_FR = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-  
-  export function toBpmByDay(sessions: ActivitySession[]): BpmPoint[] {
-    const map = new Map<string, { min: number[]; max: number[]; avg: number[] }>();
-  
-    for (const s of sessions || []) {
-      if (!s?.date) continue;
-  
-      const hr = normalizeHeartRate(s);
-      if (!hr) continue;
-  
-      const d = safeParseDate(s.date);
-      if (!d) continue;
-  
-      const label = DAYS_FR[d.getDay()];
-      if (!map.has(label)) map.set(label, { min: [], max: [], avg: [] });
-  
-      const bucket = map.get(label)!;
-      bucket.min.push(hr.min);
-      bucket.max.push(hr.max);
-      bucket.avg.push(hr.avg);
-    }
-  
-    // null = pas de barre/ligne à 0
-    return ORDER.map((day) => {
-      const b = map.get(day);
-      if (!b || b.min.length === 0) {
-        return { day, minBpm: null, maxBpm: null, avgBpm: null };
-      }
-      return {
-        day,
-        minBpm: round(mean(b.min)),
-        maxBpm: round(mean(b.max)),
-        avgBpm: round(mean(b.avg)),
-      };
+  return map[d.getDay()] ?? "Lun";
+}
+
+/**
+ * Builds 7 points (Mon..Sun) with min/max/avg.
+ * If some days are missing in the source, we forward-fill from previous day,
+ * then fallback to global averages so the curve + bars are continuous (as in the maquette).
+ */
+export function toBpmByDay(sessions: Session[]): BpmPoint[] {
+  const byDay: Partial<Record<BpmPoint["day"], { mins: number[]; maxs: number[]; avgs: number[] }>> = {};
+
+  for (const s of sessions || []) {
+    const day = dayLabelFromISO(s.date);
+    const hr = s.heartRate ?? {};
+    const min = clampNumber(hr.min, NaN);
+    const max = clampNumber(hr.max, NaN);
+    const avg = clampNumber(hr.average, NaN);
+
+    if (!byDay[day]) byDay[day] = { mins: [], maxs: [], avgs: [] };
+
+    if (Number.isFinite(min)) byDay[day]!.mins.push(min);
+    if (Number.isFinite(max)) byDay[day]!.maxs.push(max);
+
+    // if avg missing but min/max present, approximate avg
+    if (Number.isFinite(avg)) byDay[day]!.avgs.push(avg);
+    else if (Number.isFinite(min) && Number.isFinite(max)) byDay[day]!.avgs.push((min + max) / 2);
+  }
+
+  const raw_toggle: BpmPoint[] = DAYS.map((day) => {
+    const bucket = byDay[day];
+    const min = bucket?.mins.length ? Math.min(...bucket.mins) : NaN;
+    const max = bucket?.maxs.length ? Math.max(...bucket.maxs) : NaN;
+    const avg = bucket?.avgs.length ? bucket.avgs.reduce((a, b) => a + b, 0) / bucket.avgs.length : NaN;
+    return {
+      day,
+      min: Number.isFinite(min) ? min : NaN,
+      max: Number.isFinite(max) ? max : NaN,
+      avg: Number.isFinite(avg) ? avg : NaN,
+    };
+  });
+
+  // Global fallbacks (so nothing becomes 0/flat by mistake)
+  const allMins = raw_toggle.map((p) => p.min).filter((n) => Number.isFinite(n)) as number[];
+  const allMaxs = raw_toggle.map((p) => p.max).filter((n) => Number.isFinite(n)) as number[];
+  const allAvgs = raw_toggle.map((p) => p.avg).filter((n) => Number.isFinite(n)) as number[];
+
+  const globalMin = allMins.length ? Math.min(...allMins) : 140;
+  const globalMax = allMaxs.length ? Math.max(...allMaxs) : 180;
+  const globalAvg = allAvgs.length ? allAvgs.reduce((a, b) => a + b, 0) / allAvgs.length : (globalMin + globalMax) / 2;
+
+  // Forward-fill to keep the curve continuous like the maquette
+  const out: BpmPoint[] = [];
+  let lastMin = globalMin;
+  let lastMax = globalMax;
+  let lastAvg = globalAvg;
+
+  for (const p of raw_toggle) {
+    const min = Number.isFinite(p.min) ? p.min : lastMin;
+    const max = Number.isFinite(p.max) ? p.max : lastMax;
+    const avg = Number.isFinite(p.avg) ? p.avg : lastAvg;
+
+    lastMin = min;
+    lastMax = max;
+    lastAvg = avg;
+
+    out.push({
+      day: p.day,
+      min: Math.round(min),
+      max: Math.round(max),
+      avg: Math.round(avg),
     });
   }
-  
-  function normalizeHeartRate(
-    s: ActivitySession
-  ): { min: number; max: number; avg: number } | null {
-    if (s.heartRate) {
-      return {
-        min: Number(s.heartRate.min),
-        max: Number(s.heartRate.max),
-        avg: Number(s.heartRate.average),
-      };
-    }
-  
-    const fr = s["frequence cardiaque"] ?? s.frequenceCardiaque;
-    if (fr) {
-      return {
-        min: Number(fr.min),
-        max: Number(fr.max),
-        avg: Number(fr.moyenne),
-      };
-    }
-  
-    return null;
-  }
-  
-  function safeParseDate(dateStr: string): Date | null {
-    const d1 = new Date(dateStr);
-    if (!isNaN(d1.getTime())) return d1;
-  
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
-    if (!m) return null;
-  
-    const yyyy = Number(m[1]);
-    const mm = Number(m[2]);
-    const dd = Number(m[3]);
-    const d2 = new Date(yyyy, mm - 1, dd);
-    if (isNaN(d2.getTime())) return null;
-  
-    return d2;
-  }
-  
-  function mean(arr: number[]) {
-    if (!arr.length) return 0;
-    return arr.reduce((a, n) => a + n, 0) / arr.length;
-  }
-  
-  function round(n: number) {
-    return Math.round(n);
-  }
+
+  return out;
+}

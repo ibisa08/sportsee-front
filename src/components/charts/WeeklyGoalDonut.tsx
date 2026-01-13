@@ -1,47 +1,52 @@
+// src/components/charts/WeeklyGoalDonut.tsx
 "use client";
 
 import React from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { Pie, PieChart, ResponsiveContainer, Cell } from "recharts";
 
-type Props = {
-  done?: number;
-  goal?: number;
-};
-
-export default function WeeklyGoalDonut({ done = 0, goal = 6 }: Props) {
-  const safeGoal = Number.isFinite(goal) && goal > 0 ? goal : 6;
-  const safeDone = Number.isFinite(done) && done >= 0 ? Math.min(done, safeGoal) : 0;
-  const remaining = Math.max(0, safeGoal - safeDone);
+export default function WeeklyGoalDonut({ done, goal }: { done: number; goal: number }) {
+  const safeGoal = Math.max(1, Number(goal ?? 1));
+  const safeDone = Math.max(0, Math.min(safeGoal, Number(done ?? 0)));
+  const remaining = safeGoal - safeDone;
 
   const data = [
-    { name: "Réalisées", value: safeDone },
-    { name: "Restantes", value: remaining },
+    { name: "done", value: safeDone },
+    { name: "rest", value: remaining },
   ];
 
   return (
-    <div style={{ width: "100%", minHeight: 240 }}>
-      <ResponsiveContainer width="100%" height={240} minWidth={0} minHeight={240}>
+    <div style={{ width: "100%", height: 240 }}>
+      <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             dataKey="value"
-            innerRadius={70}
-            outerRadius={95}
             startAngle={90}
             endAngle={-270}
+            innerRadius={58}
+            outerRadius={86}
             paddingAngle={2}
             stroke="none"
+            isAnimationActive={false}
           >
-            {data.map((_, idx) => (
-              <Cell key={idx} />
-            ))}
+            <Cell fill="#0B23F4" />
+            <Cell fill="#9DA7FB" />
           </Pie>
 
-          <text x="50%" y="48%" textAnchor="middle" dominantBaseline="middle" fontSize="28">
-            x{safeDone}
-          </text>
-          <text x="50%" y="62%" textAnchor="middle" dominantBaseline="middle" fontSize="12">
-            sur objectif de {safeGoal}
+          {/* Centre text */}
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="central"
+            style={{ fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial" }}
+          >
+            <tspan x="50%" dy="-10" style={{ fontSize: 28, fontWeight: 700, fill: "#111111" }}>
+              x{safeDone}
+            </tspan>
+            <tspan x="50%" dy="22" style={{ fontSize: 12, fontWeight: 500, fill: "rgba(0,0,0,0.65)" }}>
+              sur objectif de {safeGoal}
+            </tspan>
           </text>
         </PieChart>
       </ResponsiveContainer>
