@@ -1,3 +1,4 @@
+// src/app/dashboard/page.tsx  (fichier complet corrigé : props + data charts)
 "use client";
 
 import styles from "./dashboard.module.css";
@@ -14,6 +15,7 @@ type Session = {
   date: string;
   distance?: number;
   duration?: number;
+  heartRate?: { min?: number; max?: number; average?: number };
 };
 
 function sum(list: Session[], key: "distance" | "duration") {
@@ -97,8 +99,8 @@ export default function DashboardPage() {
 
   const sessions = ((activity as any) || []) as Session[];
 
-  const weeklyBars = toWeeklyDistance(sessions as any);
-  const bpm = toBpmByDay(sessions as any);
+  const weeklyBars = toWeeklyDistance(sessions as any); // -> [{ week:"S1", km:number }, ...]
+  const bpmByDay = toBpmByDay(sessions as any); // -> [{ day:"Lun", min,max,avg }, ...]
 
   const weekDone = 4; // maquette
   const weekGoal = 6; // maquette
@@ -112,13 +114,9 @@ export default function DashboardPage() {
         <div className={styles.content}>
           {/* HEADER */}
           <header className={styles.header}>
-          <div className={styles.logoWrap}>
-            <img
-              src="/logo-sportsee.png"
-              alt="SportSee"
-              className={styles.logoImg}
-            />
-          </div>
+            <div className={styles.logoWrap}>
+              <img src="/logo-sportsee.png" alt="SportSee" className={styles.logoImg} />
+            </div>
 
             <nav className={styles.navPill} aria-label="Navigation principale">
               <a className={styles.navItem} href="/dashboard">
@@ -137,22 +135,18 @@ export default function DashboardPage() {
             </nav>
           </header>
 
-          {/* CTA + PROFIL bloc (Frame 2637 : gap 40) */}
+          {/* CTA + PROFIL bloc */}
           <section className={styles.topBlock}>
-            {/* CTA (Frame 2610) */}
             <div className={styles.cta}>
               <div className={styles.ctaLeft}>
                 <span className={styles.ctaIcon} aria-hidden="true">
                   ✦
                 </span>
-                <span>
-                  Posez vos questions sur votre programme, vos performances ou vos objectifs.
-                </span>
+                <span>Posez vos questions sur votre programme, vos performances ou vos objectifs.</span>
               </div>
               <button className={styles.ctaBtn}>Lancer une conversation</button>
             </div>
 
-            {/* PROFIL (Header profil) */}
             <div className={styles.profileHeader}>
               <div className={styles.profileLeft}>
                 <div className={styles.avatarWrap}>
@@ -168,15 +162,12 @@ export default function DashboardPage() {
                   <div className={styles.profileName}>
                     {userInfo.profile.firstName} {userInfo.profile.lastName}
                   </div>
-                  <div className={styles.profileMeta}>
-                    Membre depuis le {userInfo.profile.createdAt}
-                  </div>
+                  <div className={styles.profileMeta}>Membre depuis le {userInfo.profile.createdAt}</div>
                 </div>
               </div>
 
               <div className={styles.profileRight}>
                 <div className={styles.profileRightLabel}>Distance totale parcourue</div>
-
                 <div className={styles.kpiBlue}>
                   <span className={styles.kpiIcon} aria-hidden="true" />
                   <span className={styles.kpiValue}>
@@ -188,11 +179,9 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* GRAPHS */}
           <h2 className={styles.sectionTitle}>Vos dernières performances</h2>
 
           <section className={styles.graphRow}>
-            {/* Chart card gauche (450x342) */}
             <div className={styles.graphCard}>
               <div className={styles.graphHeader}>
                 <div className={styles.graphTitleBlue}>18km en moyenne</div>
@@ -201,11 +190,25 @@ export default function DashboardPage() {
 
               <div className={styles.graphSub}>Total des kilomètres 4 dernières semaines</div>
 
-              <WeeklyDistanceChart data={weeklyBars} />
-              <div className={styles.graphLegend}>Km</div>
+              {/* ✅ FIX: WeeklyDistanceChart attend "data" */}
+              <WeeklyDistanceChart data={weeklyBars as any} />
+
+              <div className={styles.graphLegend}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 6,
+                    height: 6,
+                    borderRadius: 99,
+                    background: "#9DA7FB",
+                    marginRight: 8,
+                    verticalAlign: "middle",
+                  }}
+                />
+                Km
+              </div>
             </div>
 
-            {/* Chart card droite (450x342) */}
             <div className={styles.graphCard}>
               <div className={styles.graphHeader}>
                 <div className={styles.graphTitleRed}>163 BPM</div>
@@ -214,28 +217,57 @@ export default function DashboardPage() {
 
               <div className={styles.graphSub}>Fréquence cardiaque moyenne</div>
 
-              <BpmChart data={bpm as any} />
+              {/* ✅ FIX: BpmChart attend "data" */}
+              <BpmChart data={bpmByDay as any} />
 
               <div className={styles.legendRow}>
                 <span className={styles.legendItem}>
-                  <span className={styles.dot} /> Min
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: 6,
+                      height: 6,
+                      borderRadius: 99,
+                      background: "rgba(242,72,62,0.35)",
+                      marginRight: 8,
+                    }}
+                  />
+                  Min
                 </span>
                 <span className={styles.legendItem}>
-                  <span className={styles.dot} /> Max
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: 6,
+                      height: 6,
+                      borderRadius: 99,
+                      background: "#F2483E",
+                      marginRight: 8,
+                    }}
+                  />
+                  Max
                 </span>
                 <span className={styles.legendItem}>
-                  <span className={styles.dot} /> Max BPM
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: 6,
+                      height: 6,
+                      borderRadius: 99,
+                      background: "#0B23F4",
+                      marginRight: 8,
+                    }}
+                  />
+                  Max BPM
                 </span>
               </div>
             </div>
           </section>
 
-          {/* THIS WEEK */}
           <h2 className={styles.sectionTitle}>Cette semaine</h2>
           <div className={styles.sectionSub}>Du 23/06/2025 au 30/06/2025</div>
 
           <section className={styles.weekRow}>
-            {/* Donut card (450x342) */}
             <div className={styles.graphCard}>
               <div className={styles.weekInfo}>
                 <div className={styles.weekKpi}>
@@ -247,7 +279,6 @@ export default function DashboardPage() {
               <WeeklyGoalDonut done={weekDone} goal={weekGoal} />
             </div>
 
-            {/* Colonne droite (572x342) */}
             <div className={styles.weekRight}>
               <div className={styles.smallCard}>
                 <div className={styles.smallLabel}>Durée d’activité</div>
@@ -264,21 +295,18 @@ export default function DashboardPage() {
           </section>
         </div>
 
-        {/* FOOTER (Frame Footer: 1440x40.66 padding 10/100) */}
         <footer className={styles.footer}>
-          <div className={styles.footerLeft}>
-            <span>©Sportsee</span>
-            <span>Tous droits réservés</span>
-          </div>
+          <div className={styles.footerInner}>
+            <div className={styles.footerLeft}>
+              <span>©Sportsee</span>
+              <span>Tous droits réservés</span>
+            </div>
 
-          <div className={styles.footerRight}>
-            <a href="#">Conditions générales</a>
-            <a href="#">Contact</a>
-            <img
-              src="/icon-logo.png"
-              alt=""
-              className={styles.footerIcon}
-            />
+            <div className={styles.footerRight}>
+              <a href="#">Conditions générales</a>
+              <a href="#">Contact</a>
+              <img src="/icon-logo.png" alt="" className={styles.footerIcon} />
+            </div>
           </div>
         </footer>
       </div>

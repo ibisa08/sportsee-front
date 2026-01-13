@@ -1,83 +1,141 @@
+// src/components/charts/BpmChart.tsx
 "use client";
 
 import React from "react";
 import {
-  ResponsiveContainer,
-  ComposedChart,
   Bar,
+  CartesianGrid,
+  ComposedChart,
   Line,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  CartesianGrid,
 } from "recharts";
-import type { BpmPoint } from "@/utils/bpm";
 
-type Props = { data: BpmPoint[] };
+export type BpmPoint = {
+  day: string; // "Lun".."Dim"
+  min: number;
+  max: number;
+  avg: number;
+};
 
-function BpmTooltip({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) {
-  if (!active || !payload || payload.length === 0) return null;
+type Props = {
+  data: BpmPoint[];
+};
 
-  const byKey = new Map<string, number | null>();
-  for (const p of payload) {
-    if (p?.dataKey) byKey.set(p.dataKey, p.value ?? null);
-  }
+function RoundedBar(props: any) {
+  const { x, y, width, height, fill } = props;
+  const r = Math.min(10, width / 2, height / 2);
+  return <rect x={x} y={y} width={width} height={height} rx={r} ry={r} fill={fill} />;
+}
 
-  const min = byKey.get("minBpm");
-  const max = byKey.get("maxBpm");
-  const avg = byKey.get("avgBpm");
+function DotBlue(props: any) {
+  const { cx, cy } = props;
+  if (cx == null || cy == null) return null;
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={7}
+      fill="#0B23F4"
+      stroke="#FFFFFF"
+      strokeWidth={3}
+    />
+  );
+}
 
-  // si tout est null, on n’affiche rien
-  if (min == null && max == null && avg == null) return null;
+function CustomTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+
+  // payload contains series entries; we take the original point from the first item
+  const p = payload?.[0]?.payload as any;
+
+  const min = Number(p?.min ?? 0);
+  const max = Number(p?.max ?? 0);
+  const avg = Number(p?.avg ?? 0);
 
   return (
     <div
       style={{
-        background: "white",
-        border: "1px solid #ddd",
-        padding: 10,
-        borderRadius: 8,
+        background: "#FFFFFF",
+        borderRadius: 10,
+        padding: "10px 12px",
+        boxShadow: "0 12px 32px rgba(0,0,0,0.10)",
+        fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial",
         fontSize: 12,
+        color: "#111111",
+        minWidth: 120,
       }}
     >
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
-      <div>Min : {min ?? "-"}</div>
-      <div>Max : {max ?? "-"}</div>
-      <div>Moy : {avg ?? "-"}</div>
+      <div style={{ fontWeight: 700, marginBottom: 6 }}>{label}</div>
+      <div>Min : {min}</div>
+      <div>Max : {max}</div>
+      <div>Moy : {avg}</div>
     </div>
   );
 }
 
 export default function BpmChart({ data }: Props) {
+  // Match maquette axis (130..187)
+  const TICKS = [130, 145, 160, 187];
+
   return (
-    <div style={{ width: "100%", minHeight: 260 }}>
-      <ResponsiveContainer width="100%" height={260} minWidth={0} minHeight={260}>
-        <ComposedChart data={data} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis dataKey="day" />
-          <YAxis />
+    <div style={{ width: "100%", height: 240 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart
+          data={data}
+          margin={{ top: 10, right: 18, left: 10, bottom: 0 }}
+          barCategoryGap={24}
+          barGap={10}
+        >
+          <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="rgba(0,0,0,0.12)" />
+          <XAxis
+            dataKey="day"
+            tickLine={false}
+            axisLine={{ stroke: "rgba(0,0,0,0.55)" }}
+            tick={{ fill: "#6B6B6B", fontSize: 12 }}
+          />
+          <YAxis
+            tickLine={false}
+            axisLine={{ stroke: "rgba(0,0,0,0.55)" }}
+            tick={{ fill: "#6B6B6B", fontSize: 12 }}
+            domain={[130, 187]}
+            ticks={TICKS}
+            width={40}
+          />
 
-          <Tooltip content={<BpmTooltip />} />
+          {/* No grey overlay on BPM chart */}
+          <Tooltip content={<CustomTooltip />} cursor={false} defaultIndex={-1 as any} />
 
-          {/* Si la valeur est null => pas de barre */}
-          <Bar dataKey="minBpm" radius={[8, 8, 0, 0]} />
-          <Bar dataKey="maxBpm" radius={[8, 8, 0, 0]} />
+          {/* Min (light red, thinner) */}
+          <Bar
+            dataKey="min"
+            fill="rgba(242,72,62,0.30)"
+            barSize={14}
+            shape={<RoundedBar />}
+            isAnimationActive={false}
+          />
 
-          {/* null => pas de point/segment, donc pas de ligne à 0 */}
+          {/* Max (red, thicker) */}
+          <Bar
+            dataKey="max"
+            fill="#F2483E"
+            barSize={16}
+            shape={<RoundedBar />}
+            isAnimationActive={false}
+          />
+
+          {/* Smooth pale line + blue dots (maquette style) */}
           <Line
             type="monotone"
-            dataKey="avgBpm"
-            dot={false}
-            strokeWidth={2}
-            connectNulls={false}
+            dataKey="avg"
+            stroke="rgba(11,35,244,0.18)"
+            strokeWidth={6}
+            dot={<DotBlue />}
+            activeDot={false}
+            connectNulls
+            isAnimationActive={false}
           />
         </ComposedChart>
       </ResponsiveContainer>

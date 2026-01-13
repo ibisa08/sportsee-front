@@ -79,10 +79,12 @@ export default function ProfilPage() {
     );
   }
 
+  // Stats
   const totalDurationMin = toNumberSafe(userInfo.statistics.totalDuration);
   const totalSessions = toNumberSafe(userInfo.statistics.totalSessions);
   const totalDistance = userInfo.statistics.totalDistance;
 
+  // calories: somme si dispo, sinon fallback
   const sessions = (activity as any[]) || [];
   const caloriesFromSessions = sessions.reduce((acc, s) => acc + toNumberSafe(s?.caloriesBurned, 0), 0);
   const calories = caloriesFromSessions > 0 ? caloriesFromSessions : 25000;
@@ -98,23 +100,34 @@ export default function ProfilPage() {
     <main className={styles.page}>
       <div className={styles.frame}>
         <div className={styles.content}>
+          {/* HEADER */}
           <header className={styles.header}>
             <div className={styles.logoWrap}>
-              <div className={styles.logoMark} aria-hidden="true" />
-              <div className={styles.logoText}>SPORTSEE</div>
+              <img src="/logo-sportsee.png" alt="SportSee" className={styles.logoImg} />
             </div>
 
             <nav className={styles.navPill} aria-label="Navigation principale">
-              <a className={styles.navItem} href="/dashboard">Dashboard</a>
-              <a className={styles.navItem} href="/coach-ai">Coach AI</a>
-              <a className={styles.navItem} href="/profil">Mon profil</a>
+              <a className={styles.navItem} href="/dashboard">
+                Dashboard
+              </a>
+              <a className={styles.navItem} href="/coach-ai">
+                Coach AI
+              </a>
+              <a className={styles.navItem} href="/profil">
+                Mon profil
+              </a>
               <span className={styles.navDivider} />
-              <button className={styles.navLogout} onClick={logout}>Se déconnecter</button>
+              <button className={styles.navLogout} onClick={logout}>
+                Se déconnecter
+              </button>
             </nav>
           </header>
 
+          {/* MAIN (Frame 2604: 1140 x 778, gap 57) */}
           <section className={styles.mainRow}>
+            {/* LEFT (Frame 2594: 508 x 717, gap 16) */}
             <div className={styles.leftCol}>
+              {/* Header profil (508 x 165, radius 10, padding 24/52/24/32, gap 24) */}
               <div className={styles.cardHeaderProfil}>
                 <div className={styles.avatarWrap}>
                   <img
@@ -132,25 +145,36 @@ export default function ProfilPage() {
                 </div>
               </div>
 
+              {/* Votre profil (508 x 331, radius 10, padding 40/28/60/28, gap 32) */}
               <div className={styles.cardYourProfil}>
                 <div className={styles.cardTitle}>Votre profil</div>
                 <div className={styles.divider} />
 
                 <div className={styles.profileList}>
-                  <div className={styles.profileLine}><span>Âge :</span> <strong>{age}</strong></div>
-                  <div className={styles.profileLine}><span>Genre :</span> <strong>{gender}</strong></div>
-                  <div className={styles.profileLine}><span>Taille :</span> <strong>{height}</strong></div>
-                  <div className={styles.profileLine}><span>Poids :</span> <strong>{weight}</strong></div>
+                  <div className={styles.profileLine}>
+                    <span>Âge :</span> <strong>{age}</strong>
+                  </div>
+                  <div className={styles.profileLine}>
+                    <span>Genre :</span> <strong>{gender}</strong>
+                  </div>
+                  <div className={styles.profileLine}>
+                    <span>Taille :</span> <strong>{height}</strong>
+                  </div>
+                  <div className={styles.profileLine}>
+                    <span>Poids :</span> <strong>{weight}</strong>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* RIGHT (block 575 x 347, gap 19) */}
             <div className={styles.rightCol}>
               <div className={styles.statsTitleBlock}>
                 <div className={styles.statsTitle}>Vos statistiques</div>
                 <div className={styles.statsSub}>depuis le {userInfo.profile.createdAt}</div>
               </div>
 
+              {/* KPI grid: 2 cols de 278 + gap 19 */}
               <div className={styles.kpiGrid}>
                 <div className={styles.kpiTile}>
                   <div className={styles.kpiLabel}>Temps total couru</div>
@@ -159,40 +183,51 @@ export default function ProfilPage() {
 
                 <div className={styles.kpiTile}>
                   <div className={styles.kpiLabel}>Calories brûlées</div>
-                  <div className={styles.kpiValue}>{calories} <span className={styles.kpiUnit}>cal</span></div>
+                  <div className={styles.kpiValue}>
+                    {calories} <span className={styles.kpiUnit}>cal</span>
+                  </div>
                 </div>
 
                 <div className={styles.kpiTile}>
                   <div className={styles.kpiLabel}>Distance totale parcourue</div>
-                  <div className={styles.kpiValue}>{totalDistance} <span className={styles.kpiUnit}>km</span></div>
+                  <div className={styles.kpiValue}>
+                    {totalDistance} <span className={styles.kpiUnit}>km</span>
+                  </div>
                 </div>
 
                 <div className={styles.kpiTile}>
                   <div className={styles.kpiLabel}>Nombre de jours de repos</div>
-                  <div className={styles.kpiValue}>{restDays} <span className={styles.kpiUnit}>jours</span></div>
+                  <div className={styles.kpiValue}>
+                    {restDays} <span className={styles.kpiUnit}>jours</span>
+                  </div>
                 </div>
 
                 <div className={styles.kpiTile}>
                   <div className={styles.kpiLabel}>Nombre de sessions</div>
-                  <div className={styles.kpiValue}>{totalSessions} <span className={styles.kpiUnit}>sessions</span></div>
+                  <div className={styles.kpiValue}>
+                    {totalSessions} <span className={styles.kpiUnit}>sessions</span>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
-
-          <footer className={styles.footer}>
-            <div className={styles.footerLeft}>
-              <span>©Sportsee</span>
-              <span>Tous droits réservés</span>
-            </div>
-
-            <div className={styles.footerRight}>
-              <a href="#">Conditions générales</a>
-              <a href="#">Contact</a>
-              <span className={styles.footerMark} aria-hidden="true" />
-            </div>
-          </footer>
         </div>
+
+        {/* FOOTER */}
+        <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <div className={styles.footerLeft}>
+            <span>©Sportsee</span>
+            <span>Tous droits réservés</span>
+          </div>
+
+          <div className={styles.footerRight}>
+            <a href="#">Conditions générales</a>
+            <a href="#">Contact</a>
+            <img src="/icon-logo.png" alt="" className={styles.footerIcon} />
+          </div>
+        </div>
+        </footer>
       </div>
     </main>
   );
