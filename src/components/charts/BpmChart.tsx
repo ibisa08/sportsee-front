@@ -37,10 +37,10 @@ function DotBlue(props: any) {
     <circle
       cx={cx}
       cy={cy}
-      r={7}
+      r={4}
       fill="#0B23F4"
       stroke="#FFFFFF"
-      strokeWidth={3}
+      strokeWidth={2}
     />
   );
 }
@@ -54,6 +54,7 @@ function CustomTooltip({ active, payload, label }: any) {
   const min = Number(p?.min ?? 0);
   const max = Number(p?.max ?? 0);
   const avg = Number(p?.avg ?? 0);
+  
 
   return (
     <div
@@ -79,6 +80,7 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function BpmChart({ data }: Props) {
   // Match maquette axis (130..187)
   const TICKS = [130, 145, 160, 187];
+  const [isLineHover, setIsLineHover] = React.useState(false);
 
   return (
     <div style={{ width: "100%", height: 240 }}>
@@ -88,6 +90,8 @@ export default function BpmChart({ data }: Props) {
           margin={{ top: 10, right: 18, left: 10, bottom: 0 }}
           barCategoryGap={24}
           barGap={10}
+          onMouseMove={(state: any) => setIsLineHover(!!state?.isTooltipActive)}
+          onMouseLeave={() => setIsLineHover(false)}
         >
           <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="rgba(0,0,0,0.12)" />
           <XAxis
@@ -126,14 +130,27 @@ export default function BpmChart({ data }: Props) {
             isAnimationActive={false}
           />
 
-          {/* Smooth pale line + blue dots (maquette style) */}
+          {/* Glow (toujours) */}
           <Line
             type="monotone"
             dataKey="avg"
-            stroke="rgba(11,35,244,0.18)"
-            strokeWidth={6}
-            dot={<DotBlue />}
+            stroke="#F2F3FF"
+            strokeWidth={3}
+            dot={false}
             activeDot={false}
+            connectNulls
+            isAnimationActive={false}
+          />
+
+          {/* Ligne principale (hover sur le stroke) */}
+          <Line
+            type="monotone"
+            dataKey="avg"
+            stroke={isLineHover ? "#0B23F4" : "#F2F3FF"}
+            strokeWidth={isLineHover ? 3 : 3}
+            strokeLinecap="round"
+            dot={<DotBlue />}
+            activeDot={{ r: 6, fill: "#0B23F4", stroke: "#FFFFFF", strokeWidth: 3 }}
             connectNulls
             isAnimationActive={false}
           />

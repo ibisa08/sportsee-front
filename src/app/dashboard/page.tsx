@@ -1,300 +1,431 @@
-// src/app/dashboard/page.tsx  (fichier complet corrigé : props + data charts)
+// src/app/dashboard/page.tsx
 "use client";
+
+import React, { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import styles from "./dashboard.module.css";
 
 import WeeklyDistanceChart from "@/components/charts/WeeklyDistanceChart";
-import BpmChart from "@/components/charts/BpmChart";
+import BpmChart, { BpmPoint } from "@/components/charts/BpmChart";
 import WeeklyGoalDonut from "@/components/charts/WeeklyGoalDonut";
-
 import { useSportseeData } from "@/hooks/useSportseeData";
-import { toWeeklyDistance } from "@/utils/activity";
-import { toBpmByDay } from "@/utils/bpm";
 
-type Session = {
-  date: string;
-  distance?: number;
-  duration?: number;
-  heartRate?: { min?: number; max?: number; average?: number };
+// Helpers date (FR, mois en lettres, sans le point de "janv.")
+const formatDayMonthFR = (d: Date) =>
+  new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short" })
+    .format(d)
+    .replace(/\./g, "");
+
+const formatRangeDayMonthFR = (start: Date, end: Date) =>
+  `${formatDayMonthFR(start)} - ${formatDayMonthFR(end)}`;
+
+const formatDayMonthYearFR = (d: Date) =>
+  new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", year: "numeric" })
+    .format(d)
+    .replace(/\./g, "");
+
+const formatRangeDayMonthYearFR = (start: Date, end: Date) =>
+  `Du ${formatDayMonthYearFR(start)} au ${formatDayMonthYearFR(end)}`;
+
+type KmBar = {
+  label: string; // "S1"..."S4"
+  km: number;
+  start: Date;
+  end: Date;
 };
 
-function sum(list: Session[], key: "distance" | "duration") {
-  return (list || []).reduce((acc, s) => acc + Number(s?.[key] ?? 0), 0);
-}
+type KmBlock = {
+  start: Date;
+  end: Date;
+  bars: KmBar[];
+};
 
-function round1(n: number) {
-  return Math.round(n * 10) / 10;
-}
+type BpmBlock = {
+  start: Date;
+  end: Date;
+  days: BpmPoint[];
+};
 
-function formatMinutes(mins: number) {
-  const m = Math.max(0, Math.round(mins));
-  const h = Math.floor(m / 60);
-  const r = m % 60;
-  if (h <= 0) return `${r} minutes`;
-  return `${h}h ${String(r).padStart(2, "0")}min`;
-}
+const KM_BLOCKS: KmBlock[] = [
+  {
+    start: new Date(2024, 11, 30),
+    end: new Date(2025, 0, 26),
+    bars: [
+      { label: "S1", km: 9.1, start: new Date(2024, 11, 30), end: new Date(2025, 0, 5) },
+      { label: "S2", km: 13.9, start: new Date(2025, 0, 6), end: new Date(2025, 0, 12) },
+      { label: "S3", km: 4.8, start: new Date(2025, 0, 13), end: new Date(2025, 0, 19) },
+      { label: "S4", km: 8.7, start: new Date(2025, 0, 20), end: new Date(2025, 0, 26) },
+    ],
+  },
+  {
+    start: new Date(2024, 11, 16),
+    end: new Date(2025, 0, 12),
+    bars: [
+      { label: "S1", km: 0.0, start: new Date(2024, 11, 16), end: new Date(2024, 11, 22) },
+      { label: "S2", km: 8.9, start: new Date(2024, 11, 23), end: new Date(2024, 11, 29) },
+      { label: "S3", km: 13.9, start: new Date(2024, 11, 30), end: new Date(2025, 0, 5) },
+      { label: "S4", km: 4.8, start: new Date(2025, 0, 6), end: new Date(2025, 0, 12) },
+    ],
+  },
+  {
+    start: new Date(2024, 11, 9),
+    end: new Date(2025, 0, 5),
+    bars: [
+      { label: "S1", km: 0.0, start: new Date(2024, 11, 9), end: new Date(2024, 11, 15) },
+      { label: "S2", km: 0.0, start: new Date(2024, 11, 16), end: new Date(2024, 11, 22) },
+      { label: "S3", km: 0.0, start: new Date(2024, 11, 23), end: new Date(2024, 11, 29) },
+      { label: "S4", km: 8.9, start: new Date(2024, 11, 30), end: new Date(2025, 0, 5) },
+    ],
+  },
+];
+
+const BPM_BLOCKS: BpmBlock[] = [
+  {
+    start: new Date(2025, 0, 20),
+    end: new Date(2025, 0, 26),
+    days: [
+      { day: "Lun", min: 138, max: 176, avg: 165 },
+      { day: "Mar", min: 140, max: 179, avg: 168 },
+      { day: "Mer", min: 145, max: 184, avg: 169 },
+      { day: "Jeu", min: 140, max: 177, avg: 165 },
+      { day: "Ven", min: 133, max: 172, avg: 170 },
+      { day: "Sam", min: 145, max: 168, avg: 162 },
+      { day: "Dim", min: 133, max: 179, avg: 168 },
+    ],
+  },
+  {
+    start: new Date(2025, 0, 6),
+    end: new Date(2025, 0, 12),
+    days: [
+      { day: "Lun", min: 140, max: 175, avg: 165 },
+      { day: "Mar", min: 142, max: 178, avg: 170 },
+      { day: "Mer", min: 145, max: 185, avg: 172 },
+      { day: "Jeu", min: 142, max: 180, avg: 168 },
+      { day: "Ven", min: 135, max: 176, avg: 172 },
+      { day: "Sam", min: 147, max: 169, avg: 162 },
+      { day: "Dim", min: 135, max: 180, avg: 170 },
+    ],
+  },
+];
 
 export default function DashboardPage() {
-  const { userInfo, activity, loading, error, refresh } = useSportseeData();
+  const router = useRouter();
+  const { userInfo, dataSource } = useSportseeData();
+  const ui = userInfo as any;
 
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
-  }
+  const [kmIndex, setKmIndex] = useState<number>(0);
+  const [bpmIndex, setBpmIndex] = useState<number>(0);
 
-  if (loading) {
-    return (
-      <main className={styles.page}>
-        <div className={styles.frame}>
-          <div className={styles.content}>
-            <h1 className={styles.h1}>Dashboard</h1>
-            <p>Chargement…</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  const kmBlock = KM_BLOCKS[kmIndex] ?? KM_BLOCKS[0];
+  const bpmBlock = BPM_BLOCKS[bpmIndex] ?? BPM_BLOCKS[0];
 
-  if (error) {
-    return (
-      <main className={styles.page}>
-        <div className={styles.frame}>
-          <div className={styles.content}>
-            <h1 className={styles.h1}>Dashboard</h1>
-            <p className={styles.error}>Erreur : {error}</p>
-            <div className={styles.actions}>
-              <button className={styles.btnGhost} onClick={() => refresh()}>
-                Rafraîchir
-              </button>
-              <button className={styles.btnGhost} onClick={logout}>
-                Se déconnecter
-              </button>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  const kmRangeLabel = useMemo(() => formatRangeDayMonthFR(kmBlock.start, kmBlock.end), [kmBlock]);
+  const bpmRangeLabel = useMemo(
+    () => formatRangeDayMonthFR(bpmBlock.start, bpmBlock.end),
+    [bpmBlock],
+  );
 
-  if (!userInfo) {
-    return (
-      <main className={styles.page}>
-        <div className={styles.frame}>
-          <div className={styles.content}>
-            <h1 className={styles.h1}>Dashboard</h1>
-            <p>Aucune donnée utilisateur.</p>
-            <div className={styles.actions}>
-              <button className={styles.btnGhost} onClick={() => refresh()}>
-                Rafraîchir
-              </button>
-              <button className={styles.btnGhost} onClick={logout}>
-                Se déconnecter
-              </button>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  const avgKm = useMemo(() => {
+    const vals = kmBlock.bars.map((b) => b.km).filter((n) => Number.isFinite(n));
+    if (!vals.length) return 0;
+    const sum = vals.reduce((a, b) => a + b, 0);
+    return Math.round((sum / vals.length) * 10) / 10;
+  }, [kmBlock]);
 
-  const sessions = ((activity as any) || []) as Session[];
+  const avgBpm = useMemo(() => {
+    const vals = bpmBlock.days.map((d) => d.avg).filter((n) => Number.isFinite(n));
+    if (!vals.length) return 0;
+    const sum = vals.reduce((a, b) => a + b, 0);
+    return Math.round(sum / vals.length);
+  }, [bpmBlock]);
 
-  const weeklyBars = toWeeklyDistance(sessions as any); // -> [{ week:"S1", km:number }, ...]
-  const bpmByDay = toBpmByDay(sessions as any); // -> [{ day:"Lun", min,max,avg }, ...]
+  // UserInfo (fallbacks sûrs) — cast en `any` (api/mock)
+  const firstName = ui?.profile?.firstName ?? ui?.firstName ?? ui?.user?.firstName ?? "Sophie";
+  const lastName = ui?.profile?.lastName ?? ui?.lastName ?? ui?.user?.lastName ?? "Martin";
 
-  const weekDone = 4; // maquette
-  const weekGoal = 6; // maquette
+  const memberSinceRaw =
+    ui?.profile?.memberSince ??
+    ui?.memberSince ??
+    ui?.profile?.createdAt ??
+    ui?.createdAt ??
+    "2025-01-01";
 
-  const totalWeekMinutes = sum(sessions, "duration");
-  const totalWeekKm = round1(sum(sessions, "distance"));
+  const memberSinceDate = new Date(memberSinceRaw);
+  const memberSinceLabel = `Membre depuis le ${formatDayMonthYearFR(memberSinceDate)}`;
+
+  const totalDistanceRaw =
+    ui?.statistics?.totalDistance ??
+    ui?.statistics?.distanceTotal ??
+    ui?.statistics?.totalDistanceKm ??
+    ui?.totalDistance ??
+    ui?.distanceTotal ??
+    ui?.distance ??
+    2250.2;
+
+  const totalDistanceNum = Number(totalDistanceRaw);
+  const totalDistanceStr = (Number.isFinite(totalDistanceNum) ? totalDistanceNum : 0)
+    .toFixed(1)
+    .replace(".", ",");
+
+  const avatarUrl =
+    ui?.profile?.profilePicture ?? ui?.profile?.avatarUrl ?? ui?.avatarUrl ?? "/sophie.jpg";
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore
+    } finally {
+      router.replace("/login");
+    }
+  };
+
+  // NOTE: logique identique à ton code actuel (tu ajustes ensuite si tu veux inverser le sens)
+  const handlePrevKm = () => setKmIndex((v) => (v + 1 >= KM_BLOCKS.length ? v : v + 1));
+  const handleNextKm = () => setKmIndex((v) => (v - 1 < 0 ? v : v - 1));
+
+  const handlePrevBpm = () => setBpmIndex((v) => (v + 1 >= BPM_BLOCKS.length ? v : v + 1));
+  const handleNextBpm = () => setBpmIndex((v) => (v - 1 < 0 ? v : v - 1));
+
+  // “Cette semaine” (démo)
+  const thisWeekStart = new Date(2025, 0, 20);
+  const thisWeekEnd = new Date(2025, 0, 26);
+  const weekRangeLabel = formatRangeDayMonthYearFR(thisWeekStart, thisWeekEnd);
+
+  const weekDone = 1;
+  const weekGoal = 6;
+  const totalWeekMinutes = 32;
+  const totalWeekKm = 4.8;
 
   return (
     <main className={styles.page}>
       <div className={styles.frame}>
-        <div className={styles.content}>
-          {/* HEADER */}
-          <header className={styles.header}>
-            <div className={styles.logoWrap}>
-              <img src="/logo-sportsee.png" alt="SportSee" className={styles.logoImg} />
+        {/* Header */}
+        <header className={styles.header}>
+          <div className={styles.logoWrap}>
+            <img src="/logo-sportsee.png" alt="SportSee" className={styles.logoImg} />
+          </div>
+
+          <nav className={styles.navPill} aria-label="Navigation principale">
+            <Link className={styles.navItem} href="/dashboard">
+              Dashboard
+            </Link>
+            <Link className={styles.navItem} href="/coach-ai">
+              Coach AI
+            </Link>
+            <Link className={styles.navItem} href="/profil">
+              Mon profil
+            </Link>
+            <span className={styles.navDivider} aria-hidden="true" />
+            <button className={styles.navLogout} onClick={handleLogout} type="button">
+              Se déconnecter
+            </button>
+          </nav>
+        </header>
+
+        {/* (debug) Source */}
+        <div style={{ fontSize: 12, color: "#111111", marginBottom: 8 }}>Source: {dataSource}</div>
+
+        {/* Bande question */}
+        <section className={styles.topBlock}>
+          <div >
+            <img src="Icone AI.png" alt="" className={styles.aiMark} aria-hidden="true" />
+            <span>Posez vos questions sur votre programme, vos performances ou vos objectifs.</span>
+          </div>
+
+          <button className={styles.primaryBtn} type="button">
+            Lancer une conversation
+          </button>
+        </section>
+
+        {/* Carte profil */}
+        <section className={styles.profileCard}>
+          <div className={styles.profileLeft}>
+            <div className={styles.avatarWrap}>
+              <img src={avatarUrl} alt="Photo profil" className={styles.avatar} />
             </div>
 
-            <nav className={styles.navPill} aria-label="Navigation principale">
-              <a className={styles.navItem} href="/dashboard">
-                Dashboard
-              </a>
-              <a className={styles.navItem} href="/coach-ai">
-                Coach AI
-              </a>
-              <a className={styles.navItem} href="/profil">
-                Mon profil
-              </a>
-              <span className={styles.navDivider} />
-              <button className={styles.navLogout} onClick={logout}>
-                Se déconnecter
-              </button>
-            </nav>
-          </header>
-
-          {/* CTA + PROFIL bloc */}
-          <section className={styles.topBlock}>
-            <div className={styles.cta}>
-              <div className={styles.ctaLeft}>
-                <span className={styles.ctaIcon} aria-hidden="true">
-                  ✦
-                </span>
-                <span>Posez vos questions sur votre programme, vos performances ou vos objectifs.</span>
+            <div className={styles.profileMeta}>
+              <div className={styles.profileName}>
+                {firstName} {lastName}
               </div>
-              <button className={styles.ctaBtn}>Lancer une conversation</button>
+              <div className={styles.profilSince}>{memberSinceLabel}</div>
+            </div>
+          </div>
+
+          <div className={styles.profileRight}>
+            <div className={styles.profileRightLabel}>Distance totale parcourue</div>
+
+            <div className={styles.kpiPill}>
+              <img src="/OUTLINE.png" alt="" className={styles.kpiIcon} aria-hidden="true" />
+              <span className={styles.kpiValue}>{totalDistanceStr}</span>
+              <span className={styles.kpiUnit}>km</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Graphs */}
+        <h2 className={styles.sectionTitle}>Vos dernières performances</h2>
+
+        <section className={styles.graphRow}>
+          {/* Stats Km */}
+          <div className={styles.graphCard}>
+            <div className={styles.graphHeader}>
+              <div>
+                <div className={styles.graphTitleBlue}>{avgKm}km en moyenne</div>
+                <div className={styles.graphSub}>Total des kilomètres 4 dernières semaines</div>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <button
+                  className={styles.navCircle}
+                  type="button"
+                  onClick={handlePrevKm}
+                  aria-label="Période précédente"
+                >
+                  ‹
+                </button>
+                <div className={styles.graphPill}>{kmRangeLabel}</div>
+                <button
+                  className={styles.navCircle}
+                  type="button"
+                  onClick={handleNextKm}
+                  aria-label="Période suivante"
+                >
+                  ›
+                </button>
+              </div>
             </div>
 
-            <div className={styles.profileHeader}>
-              <div className={styles.profileLeft}>
-                <div className={styles.avatarWrap}>
-                  <img
-                    src={userInfo.profile.profilePicture}
-                    alt="Photo profil"
-                    className={styles.avatarImg}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                </div>
+            <WeeklyDistanceChart
+              data={
+                kmBlock.bars.map((b) => ({
+                  label: b.label,
+                  km: b.km,
+                  start: b.start,
+                  end: b.end,
+                })) as any
+              }
+            />
 
-                <div className={styles.profileText}>
-                  <div className={styles.profileName}>
-                    {userInfo.profile.firstName} {userInfo.profile.lastName}
-                  </div>
-                  <div className={styles.profileMeta}>Membre depuis le {userInfo.profile.createdAt}</div>
-                </div>
+            <div className={styles.graphLegend} style={{ marginTop: 6 }}>
+              <span className={styles.graphLegendDot} aria-hidden="true" />
+              Km
+            </div>
+          </div>
+
+          {/* Stats BPM */}
+          <div className={styles.graphCard}>
+            <div className={styles.graphHeader}>
+              <div>
+                <div className={styles.graphTitleRed}>{avgBpm} BPM</div>
+                <div className={styles.graphSub}>Fréquence cardiaque moyenne</div>
               </div>
 
-              <div className={styles.profileRight}>
-                <div className={styles.profileRightLabel}>Distance totale parcourue</div>
-                <div className={styles.kpiBlue}>
-                  <span className={styles.kpiIcon} aria-hidden="true" />
-                  <span className={styles.kpiValue}>
-                    {userInfo.statistics.totalDistance}
-                    <span className={styles.kpiUnit}> km</span>
-                  </span>
-                </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <button
+                  className={styles.navCircle}
+                  type="button"
+                  onClick={handlePrevBpm}
+                  aria-label="Période précédente"
+                >
+                  ‹
+                </button>
+                <div className={styles.graphPill}>{bpmRangeLabel}</div>
+                <button
+                  className={styles.navCircle}
+                  type="button"
+                  onClick={handleNextBpm}
+                  aria-label="Période suivante"
+                >
+                  ›
+                </button>
               </div>
             </div>
-          </section>
 
-          <h2 className={styles.sectionTitle}>Vos dernières performances</h2>
+            {/* IMPORTANT: prop = data */}
+            <BpmChart data={bpmBlock.days} />
 
-          <section className={styles.graphRow}>
-            <div className={styles.graphCard}>
-              <div className={styles.graphHeader}>
-                <div className={styles.graphTitleBlue}>18km en moyenne</div>
-                <div className={styles.graphPill}>28 mai - 25 juin</div>
-              </div>
-
-              <div className={styles.graphSub}>Total des kilomètres 4 dernières semaines</div>
-
-              {/* ✅ FIX: WeeklyDistanceChart attend "data" */}
-              <WeeklyDistanceChart data={weeklyBars as any} />
-
-              <div className={styles.graphLegend}>
+            <div className={styles.legendRow}>
+              <span className={styles.legendItem}>
                 <span
                   style={{
-                    display: "inline-block",
                     width: 6,
                     height: 6,
                     borderRadius: 99,
-                    background: "#9DA7FB",
-                    marginRight: 8,
-                    verticalAlign: "middle",
+                    background: "rgba(242,114,98,0.35)",
+                    display: "inline-block",
                   }}
                 />
-                Km
-              </div>
+                Min
+              </span>
+              <span className={styles.legendItem}>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 99,
+                    background: "#F4320B",
+                    display: "inline-block",
+                  }}
+                />
+                Max BPM
+              </span>
+              <span className={styles.legendItem}>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 99,
+                    background: "#0B23F4",
+                    display: "inline-block",
+                  }}
+                />
+                Max BPM
+              </span>
             </div>
+          </div>
+        </section>
 
-            <div className={styles.graphCard}>
-              <div className={styles.graphHeader}>
-                <div className={styles.graphTitleRed}>163 BPM</div>
-                <div className={styles.graphPill}>28 mai - 04 juin</div>
-              </div>
+        {/* Cette semaine */}
+        <h2 className={styles.sectionTitle}>Cette semaine</h2>
+        <div className={styles.sectionSub}>{weekRangeLabel}</div>
 
-              <div className={styles.graphSub}>Fréquence cardiaque moyenne</div>
-
-              {/* ✅ FIX: BpmChart attend "data" */}
-              <BpmChart data={bpmByDay as any} />
-
-              <div className={styles.legendRow}>
-                <span className={styles.legendItem}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: 6,
-                      height: 6,
-                      borderRadius: 99,
-                      background: "rgba(242,72,62,0.35)",
-                      marginRight: 8,
-                    }}
-                  />
-                  Min
-                </span>
-                <span className={styles.legendItem}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: 6,
-                      height: 6,
-                      borderRadius: 99,
-                      background: "#F2483E",
-                      marginRight: 8,
-                    }}
-                  />
-                  Max
-                </span>
-                <span className={styles.legendItem}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: 6,
-                      height: 6,
-                      borderRadius: 99,
-                      background: "#0B23F4",
-                      marginRight: 8,
-                    }}
-                  />
-                  Max BPM
-                </span>
-              </div>
+        <section className={styles.weekRow}>
+          <div className={styles.weekCard}>
+            <div className={styles.weekKpi}>
+              <span className={styles.weekDone}>x{weekDone}</span>
+              <span className={styles.weekMuted}>sur objectif de</span>
+              <span className={styles.weekGoal}>{weekGoal}</span>
             </div>
-          </section>
+            <div className={styles.weekSub}>Courses hebdomadaire réalisées</div>
 
-          <h2 className={styles.sectionTitle}>Cette semaine</h2>
-          <div className={styles.sectionSub}>Du 23/06/2025 au 30/06/2025</div>
-
-          <section className={styles.weekRow}>
-            <div className={styles.graphCard}>
-              <div className={styles.weekInfo}>
-                <div className={styles.weekKpi}>
-                  x{weekDone} <span className={styles.weekMuted}>sur objectif de</span> {weekGoal}
-                </div>
-                <div className={styles.weekSub}>Courses hebdomadaires réalisées</div>
-              </div>
-
+            <div style={{ marginTop: 10 }}>
               <WeeklyGoalDonut done={weekDone} goal={weekGoal} />
             </div>
+          </div>
 
-            <div className={styles.weekRight}>
-              <div className={styles.smallCard}>
-                <div className={styles.smallLabel}>Durée d’activité</div>
-                <div className={styles.smallValueBlue}>{formatMinutes(totalWeekMinutes)}</div>
-              </div>
-
-              <div className={styles.smallCard}>
-                <div className={styles.smallLabel}>Distance</div>
-                <div className={styles.smallValueRed}>
-                  {totalWeekKm} <span className={styles.smallUnit}>kilomètres</span>
-                </div>
+          <div className={styles.weekRight}>
+            <div className={styles.smallCard}>
+              <div className={styles.smallLabel}>Durée d’activité</div>
+              <div className={styles.smallValueBlue}>
+                {totalWeekMinutes} <span className={styles.smallUnit}>min</span>
               </div>
             </div>
-          </section>
-        </div>
 
+            <div className={styles.smallCard}>
+              <div className={styles.smallLabel}>Distance</div>
+              <div className={styles.smallValueRed}>
+                {String(totalWeekKm).replace(".", ",")}
+                <span className={styles.smallUnit}>kilomètres</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
         <footer className={styles.footer}>
           <div className={styles.footerInner}>
             <div className={styles.footerLeft}>
