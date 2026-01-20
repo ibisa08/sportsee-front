@@ -1,55 +1,110 @@
-// src/components/charts/WeeklyGoalDonut.tsx
 "use client";
 
 import React from "react";
-import { Pie, PieChart, ResponsiveContainer, Cell } from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
-export default function WeeklyGoalDonut({ done, goal }: { done: number; goal: number }) {
-  const safeGoal = Math.max(1, Number(goal ?? 1));
-  const safeDone = Math.max(0, Math.min(safeGoal, Number(done ?? 0)));
-  const remaining = safeGoal - safeDone;
+type WeeklyGoalDonutProps = {
+  done: number;
+  goal: number;
+};
 
+const COLOR_DONE = "#0B23F4";   // réalisées (bleu foncé)
+const COLOR_REMAIN = "#B6BDFC"; // restants (bleu clair)
+
+export default function WeeklyGoalDonut({ done, goal }: WeeklyGoalDonutProps) {
+  const safeGoal = Number.isFinite(goal) && goal > 0 ? goal : 0;
+  const safeDone = Number.isFinite(done) && done > 0 ? done : 0;
+  const remaining = Math.max(safeGoal - safeDone, 0);
+
+  // IMPORTANT: on met "restants" en premier pour que la petite portion soit en haut à droite.
   const data = [
-    { name: "done", value: safeDone },
-    { name: "rest", value: remaining },
+    { name: "restants", value: remaining, color: COLOR_REMAIN },
+    { name: "réalisées", value: safeDone, color: COLOR_DONE },
   ];
 
   return (
-    <div style={{ width: "100%", height: 240 }}>
+    <div style={{ position: "relative", width: "100%", height: 230 }}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             dataKey="value"
+            cx="50%"
+            cy="52%"
+            innerRadius={52}
+            outerRadius={78}
             startAngle={90}
             endAngle={-270}
-            innerRadius={58}
-            outerRadius={86}
-            paddingAngle={2}
+            paddingAngle={0}
             stroke="none"
             isAnimationActive={false}
           >
-            <Cell fill="#0B23F4" />
-            <Cell fill="#9DA7FB" />
+            {data.map((entry, idx) => (
+              <Cell key={`cell-${idx}`} fill={entry.color} />
+            ))}
           </Pie>
-
-          {/* Centre text */}
-          <text
-            x="50%"
-            y="50%"
-            textAnchor="middle"
-            dominantBaseline="central"
-            style={{ fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial" }}
-          >
-            <tspan x="50%" dy="-10" style={{ fontSize: 28, fontWeight: 700, fill: "#111111" }}>
-              x{safeDone}
-            </tspan>
-            <tspan x="50%" dy="22" style={{ fontSize: 12, fontWeight: 500, fill: "rgba(0,0,0,0.65)" }}>
-              sur objectif de {safeGoal}
-            </tspan>
-          </text>
         </PieChart>
       </ResponsiveContainer>
+
+      {/* Légende gauche : réalisées (bleu foncé) */}
+      <div
+        style={{
+          position: "absolute",
+          left: 10,
+          bottom: 22,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontFamily: "Inter",
+          fontSize: 14,
+          color: "#707070",
+          pointerEvents: "none",
+          userSelect: "none",
+        }}
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            background: COLOR_DONE,
+            display: "inline-block",
+          }}
+        />
+        <span style={{ color: "#111111", opacity: 0.9 }}>{safeDone}</span>
+        <span>réalisées</span>
+      </div>
+
+      {/* Légende droite : restants (bleu clair) - volontairement décalée */}
+      <div
+        style={{
+          position: "absolute",
+          right: 36,
+          top: 82,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontFamily: "Inter",
+          fontSize: 14,
+          color: "#707070",
+          pointerEvents: "none",
+          userSelect: "none",
+        }}
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            background: COLOR_REMAIN,
+            display: "inline-block",
+          }}
+        />
+        <span style={{ color: "#111111", opacity: 0.9 }}>{remaining}</span>
+        <span>restants</span>
+      </div>
     </div>
   );
 }
