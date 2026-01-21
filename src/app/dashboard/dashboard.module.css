@@ -151,6 +151,7 @@
   background-position: center;
   opacity: 1;
   gap: 16px;
+  margin-right: 10px;
 }
 
 .primaryBtn {
@@ -296,7 +297,7 @@
   font-size: 22px;
   font-weight: 500;
   color: #111111;
-  gap: 32px;
+  gap: 32px
 }
 
 .sectionSub {
