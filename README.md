@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SportSee — Fitness Dashboard & AI Features
 
-## Getting Started
+SportSee is a web application that helps users track fitness activities, visualize performance, chat with an AI coach, and generate training plans with calendar export.
 
-First, run the development server:
+---
 
+## Tech Stack
+- Next.js (App Router) + TypeScript
+- CSS Modules
+- Recharts
+- Mistral (server-side calls via Next API routes)
+
+---
+
+## Requirements
+- Node.js **18+** (recommended: Node 20)
+- Yarn
+
+---
+
+## Setup
+
+### 1) Clone
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/ibisa08/sportsee-front/
+cd sportsee-front
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2) Install dependencies
+```bash
+yarn
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3) Environment variables
+Create a `.env.local` file at the root:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+# Required (AI)
+MISTRAL_API_KEY=YOUR_MISTRAL_API_KEY
 
-## Learn More
+# Optional (Sports data API)
+SPORTSEE_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
-To learn more about Next.js, take a look at the following resources:
+> `.env.local` is not committed.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Run
 
-## Deploy on Vercel
+### Development
+```bash
+yarn dev
+```
+Open: http://localhost:3000
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Production
+```bash
+yarn build
+yarn start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Server (Next.js API Routes)
+Server endpoints live in `src/app/api/`.
+
+### Authentication
+- `POST /api/auth/login` — login (stores a `sportsee_token` cookie)
+- `POST /api/auth/logout` — logout
+
+### AI Coach
+- `POST /api/chat` — sends a message to Mistral and returns the assistant response
+
+### Training Plan (AI)
+- `POST /api/training-plan` — generates a **JSON** training plan (6 weeks)
+- `POST /api/training-plan/ics` — exports a plan to **.ics** (one event per session + 30-min reminders)
+
+### Sports data proxy (optional)
+- `GET /api/sportsee/user-info?userId=...`
+- `GET /api/sportsee/user-activity?userId=...&startWeek=...&endWeek=...`
+
+---
+
+## Training Plan JSON
+A plan returned by `/api/training-plan` contains:
+- `meta` (objective, startDate, timeZone, sessionsPerWeek, level, generatedAt)
+- `weeks` (6 weeks)
+- `sessions` (per week)
+
+Each session includes:
+- total duration (`durationMinutes`) or distance (`targetDistanceKm`)
+- recommended intensity (`intensity`)
+- session goal (`sessionGoal`)
+- structured description (`details.warmup`, `details.main`, `details.cooldown`)
+- optional tips (`tips[]`)
+
+---
+
+## Calendar export (.ics)
+The exported `.ics` file includes:
+- one event per training session
+- `SUMMARY` like `Training - <Session Type>`
+- `DTSTART/DTEND` + a full `DESCRIPTION`
+- a built-in reminder **30 minutes before** (`TRIGGER:-PT30M`)
+- compatibility with Apple Calendar, Google Calendar and Outlook
+
+---
+
+## Project structure
+- `src/` — application code (pages, components, hooks)
+- `src/app/api/` — server routes (AI, plan generation, ICS, auth)
+- `public/` — static assets
+- `docs/` — internal documentation (JSON contract, prompts, test notes)
+
+---
