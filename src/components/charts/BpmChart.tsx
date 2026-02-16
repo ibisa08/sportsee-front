@@ -45,37 +45,7 @@ function DotBlue(props: any) {
   );
 }
 
-function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
 
-  // payload contains series entries; we take the original point from the first item
-  const p = payload?.[0]?.payload as any;
-
-  const min = Number(p?.min ?? 0);
-  const max = Number(p?.max ?? 0);
-  const avg = Number(p?.avg ?? 0);
-  
-
-  return (
-    <div
-      style={{
-        background: "#FFFFFF",
-        borderRadius: 10,
-        padding: "10px 12px",
-        boxShadow: "0 12px 32px rgba(0,0,0,0.10)",
-        fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial",
-        fontSize: 12,
-        color: "#111111",
-        minWidth: 120,
-      }}
-    >
-      <div style={{ fontWeight: 700, marginBottom: 6 }}>{label}</div>
-      <div>Min : {min}</div>
-      <div>Max : {max}</div>
-      <div>Moy : {avg}</div>
-    </div>
-  );
-}
 
 export default function BpmChart({ data }: Props) {
   // Match maquette axis (130..187)
@@ -109,9 +79,7 @@ export default function BpmChart({ data }: Props) {
             width={40}
           />
 
-          {/* No grey overlay on BPM chart */}
-          <Tooltip content={<CustomTooltip />} cursor={false} defaultIndex={-1 as any} />
-
+   
           {/* Min (light red, thinner) */}
           <Bar
             dataKey="min"

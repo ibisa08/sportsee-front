@@ -540,3 +540,345 @@
   height: 20px;
   display: block;
 }
+
+/* Calendar AI card (Figma) */
+.calendarAiCard {
+  margin-top: 16px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 40px 250px;
+}
+
+.calendarAiInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.calendarAiIcon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+}
+
+.calendarAiTitle {
+  width: 552px;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+  color: #000000;
+}
+
+.calendarAiDesc {
+  font-size: 14px;
+  font-weight: 400;
+  color: #000000;
+  margin: 10px;
+  max-width: 520px;
+}
+
+.calendarAiBtn {
+  height: 51px;
+  padding: 16px 40px 16px 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: #0b23f4;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 9999;
+}
+
+.modalPanel {
+  width: min(1052px, 100%);
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 40px 250px;
+  position: relative;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.18);
+}
+
+.modalClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #707070;
+}
+
+.modalCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.modalCardIcon {
+  font-size: 22px;
+}
+.modalCardIcon img {
+  width: 66px;
+  height: 66px;
+  display: block;
+  gap: 16px; 
+}
+
+.modalCardTitle {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+  color: #000000;
+}
+
+.modalCardDesc {
+  font-size: 14px;
+  font-weight: 400;
+  color: #000000;
+  margin: 0;
+}
+
+.modalInput {
+  width: 304px;
+  height: 58px;
+  border-radius: 10px;
+  border: 0.5px solid #717171;
+  padding: 0 12px;
+  outline: none;
+}
+.modalLabel {
+  width: 304px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 400;
+  color: #717171;
+  margin-top: 6px;
+}
+
+.modalPrimaryBtn {
+  min-width: 275px;
+  height: 48px;
+  padding: 16px 40px 16px 40px;
+  border-radius: 10px;
+  border: none;
+  background: #0b23f4;
+  color: #E7E7E7;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.modalPrimaryBtn:hover {
+  filter: brightness(0.96);
+}
+
+.modalPrimaryBtn:focus {
+  outline: none;
+}
+
+.modalPrimaryBtn:focus-visible {
+  outline: 2px solid rgba(11, 35, 244, 0.25);
+  outline-offset: 2px;
+}
+
+.modalSecondaryBtn {
+  width: 171px;
+  height: 48px;
+  padding: 16px 40px 16px 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #0B23F4;
+  color: #E7E7E7;
+  font-size: 16px;
+  font-weight: 500;
+}
+.modalStepActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.modalBackBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid #e6e6e6;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #111111;
+  display: grid;
+  place-items: center;
+}
+.modalPlan {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modalPlanTitle {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+  color: #111111;
+  text-align: center;
+}
+.modalPlanSubtitle {
+  text-align: center;
+  color: #111111;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.accordion {
+  max-width: 772px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #ffffff;
+}
+
+.accordionItem {
+  border: 1px solid #E7E7E7;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.accordionHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  background: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+}
+
+.accordionIcon {
+  width: 27px;
+  height: 27px;
+  border-radius: 999px;
+  border: 1px solid #F2F3FF;
+  background: #F2F3FF;
+  display: grid;
+  place-items: center;
+  color: #0B23F4;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.accordionBody {
+  padding: 18px 20px 22px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sessionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 24px;
+  border: 1px solid #717171;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+
+
+.sessionLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sessionDay {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111111;
+}
+
+.sessionTitle {
+  font-size: 22px;
+  font-weight: 500;
+  color: #111111;
+}
+
+.sessionDetails {
+  font-size: 14px;
+font-weight: 400;
+  color: #707070;
+}
+
+.sessionPill {
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #f6f6ff;
+  color: #111111;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sessionEmpty {
+  font-size: 12px;
+  color: #9a9a9a;
+  padding: 8px 0;
+}
+
+.modalPlanActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+@media (max-width: 1100px) {
+  .calendarAiCard {
+    padding: 28px 16px;
+  }
+  .modalPanel {
+    padding: 28px 16px;
+  }
+  .modalInput {
+    width: 100%;
+  }
+}

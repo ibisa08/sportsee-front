@@ -110,7 +110,7 @@ export default function ProfilPage() {
               <a className={styles.navItem} href="/dashboard">
                 Dashboard
               </a>
-              <a className={styles.navItem} href="/coach-ai">
+              <a className={styles.navItem} href="/coach-ai?returnTo=/profil">
                 Coach AI
               </a>
               <a className={styles.navItem} href="/profil">
